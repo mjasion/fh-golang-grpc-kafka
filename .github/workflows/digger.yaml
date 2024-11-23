@@ -1,0 +1,35 @@
+name: Digger
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+jobs:
+  digger:
+    runs-on: ubuntu-latest
+    environment: aws
+    permissions:
+      contents: write
+      actions: write
+      id-token: write
+      pull-requests: write
+      issues: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::430118842190:role/fh-golang-grpc-kafka
+          aws-region: eu-west-1
+      - uses: diggerhq/digger@v0.6.69
+        with:
+          no-backend: true
+          digger-filename:  digger.yml
+          upload-plan-destination: github
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEMETRY: false
